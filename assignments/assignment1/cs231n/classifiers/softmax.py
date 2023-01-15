@@ -34,8 +34,20 @@ def softmax_loss_naive(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    num_train = X.shape[0]
+    for i in range(num_train):
+        score = np.dot(X[i,:],W)
+        score = np.exp(score) # 求指数
+        p = score/np.sum(score) # 归一化
+        dW += np.dot(np.reshape(X[i,],(X.shape[1],-1)),np.reshape(p,(1,p.shape[0]))) # for all j
+        dW[:,y[i]] -= X[i] # j==yi
+        loss += - np.log(p[y[i]])
 
+    loss /=num_train
+    dW /= num_train
+
+    loss += reg * np.sum(W * W) # 正则化
+    dW += 2 * reg * W #正则化偏导
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     return loss, dW
@@ -59,7 +71,24 @@ def softmax_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    num_train = X.shape[0]
+    num_feature = X.shape[1]
+    num_class = W.shape[1]
+
+    score = np.dot(X,W)
+    score = np.exp(score)
+    p = score/np.sum(score,axis=1).reshape((num_train,1))
+    loss += - np.sum(np.log(p[np.arange(num_train),y]))
+    dW += np.dot(X.T,p)
+    p2 = np.zeros_like(p)
+    p2[np.arange(num_train),y] = 1.0
+    dW -= np.dot(X.T,p2)
+
+    loss /= num_train
+    dW /= num_train
+
+    loss += reg * np.sum(W*W)
+    dW += 2 * reg * W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
