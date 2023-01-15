@@ -38,13 +38,17 @@ def svm_loss_naive(W, X, y, reg):
             if margin > 0:
                 loss += margin
 
+                # calculate the dW by formula
+                dW[:,j] += X[i,:] # for yi != j
+                dW[:,y[i]] -= X[i,:] # for yi == j
+
     # Right now the loss is a sum over all training examples, but we want it
     # to be an average instead so we divide by num_train.
     loss /= num_train
-
+    dW /= num_train
     # Add regularization to the loss.
     loss += reg * np.sum(W * W)
-
+    dW += 2 * reg * W
     #############################################################################
     # TODO:                                                                     #
     # Compute the gradient of the loss function and store it dW.                #
@@ -55,7 +59,6 @@ def svm_loss_naive(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -78,8 +81,18 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    num_train = X.shape[0]
+    scores = np.dot(X,W) # 计算得到（nun_train,numclass) 的得分矩阵
 
+    correct_class_score = scores[np.arange(num_train),y] # 形成二维（num_train,2) 的矩阵，是该图正确的编号的位置
+    correct_class_score = np.reshape(correct_class_score,(num_train,1))
+
+    margin = scores - correct_class_score + 1 # 计算整体margin
+    margin[np.arange(num_train),y] = 0 # margin中正确label的位置为0，不该之前当是1
+    margin[margin<=0] = 0 # 小于0的改为0，即max函数
+
+    loss += np.sum(margin)/num_train # loss 求和
+    loss += reg * np.sum(W*W) # 正则化
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     #############################################################################
@@ -93,7 +106,11 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    margin[margin>0] = 1 # shape(num_test,num_class)
+    margin[np.arange(num_train),y] = -1*np.sum(margin,axis=1) #j==yi
+    dW += np.dot(X.T,margin) # j!=yi shape(3027,num_class)
+    dW /= num_train
+    dW += 2 * reg * W # 正则化
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 

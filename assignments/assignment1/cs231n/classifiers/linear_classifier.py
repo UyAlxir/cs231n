@@ -49,6 +49,8 @@ class LinearClassifier(object):
 
         # Run stochastic gradient descent to optimize W
         loss_history = []
+        dW = np.zeros_like(self.W)
+        rho = 0.9
         for it in range(num_iters):
             X_batch = None
             y_batch = None
@@ -66,7 +68,9 @@ class LinearClassifier(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            batch_mask = np.random.choice(num_train,batch_size,False)
+            X_batch = X[batch_mask]
+            y_batch = y[batch_mask]
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -81,7 +85,8 @@ class LinearClassifier(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            dW = rho*dW + grad
+            self.W += - learning_rate * dW
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -111,7 +116,7 @@ class LinearClassifier(object):
         ###########################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        y_pred = np.argmax(np.dot(X,self.W),axis=1)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return y_pred
@@ -131,7 +136,6 @@ class LinearClassifier(object):
         - loss as a single float
         - gradient with respect to self.W; an array of the same shape as W
         """
-        pass
 
 
 class LinearSVM(LinearClassifier):
