@@ -54,8 +54,10 @@ class TwoLayerNet(object):
         # weights and biases using the keys 'W2' and 'b2'.                         #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-        pass
+        self.params['W1'] = np.random.normal(loc=0.0,scale=weight_scale,size=(input_dim,hidden_dim))
+        self.params['b1'] = np.zeros(hidden_dim)
+        self.params['W2'] = np.random.normal(loc=0.0,scale=weight_scale,size=(hidden_dim,num_classes))
+        self.params['b2'] = np.zeros(num_classes)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -88,7 +90,13 @@ class TwoLayerNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        W1 = self.params['W1']
+        b1 = self.params['b1']
+        W2 = self.params['W2']
+        b2 = self.params['b2']
+
+        h1 , h1_cache = affine_relu_forward(X,W1,b1)
+        scores , sc_cache = affine_forward(h1,W2,b2)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -112,7 +120,19 @@ class TwoLayerNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        loss , dx = softmax_loss(scores,y)
+
+        loss += 0.5 * self.reg * np.sum(W2*W2)
+
+        dh1, dW2, db2 = affine_backward(dx,sc_cache)
+        grads['W2'] = dW2 + self.reg * W2
+        grads['b2'] = db2
+
+        loss += 0.5 * self.reg * np.sum(W1 * W1)
+
+        _, dW1, db1 = affine_relu_backward(dh1,h1_cache)
+        grads['W1'] = dW1 + self.reg * W1
+        grads['b1'] = db1
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################

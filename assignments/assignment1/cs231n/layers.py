@@ -28,7 +28,7 @@ def affine_forward(x, w, b):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    out = np.dot(x.reshape((x.shape[0],-1)),w) + b
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -61,7 +61,9 @@ def affine_backward(dout, cache):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    db = np.sum(dout,axis=0)
+    dx = np.dot(dout,w.T).reshape(x.shape)
+    dw = np.dot(x.reshape((x.shape[0],-1)).T,dout)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -87,7 +89,8 @@ def relu_forward(x):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    out = np.copy(x)
+    out[out<0] = 0
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -114,7 +117,7 @@ def relu_backward(dout, cache):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    dx = ( x>0 ) * dout
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -773,7 +776,22 @@ def svm_loss(x, y):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    num_train = x.shape[0]
+    correct_class_score = x[np.arange(num_train), y]  # 形成二维（num_train,2) 的矩阵，是该图正确的编号的位置
+    correct_class_score = np.reshape(correct_class_score, (num_train, 1))
+
+    margin = x - correct_class_score + 1  # 计算整体margin
+    margin[np.arange(num_train), y] = 0  # margin中正确label的位置为0，不该之前当是1
+    margin[margin <= 0] = 0  # 小于0的改为0，即max函数
+
+    loss = np.sum(margin) / num_train  # loss 求和
+
+    margin[margin > 0] = 1  # shape(num_test,num_class)
+    margin[np.arange(num_train), y] = -1 * np.sum(margin, axis=1)  # j==yi
+    dx = margin  # j!=yi shape(3027,num_class)
+
+    dx /= num_train
+
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -803,7 +821,18 @@ def softmax_loss(x, y):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    num_train = x.shape[0]
+
+    score = np.exp(x)
+    p = score / np.sum(score, axis=1).reshape((num_train, 1))
+    loss = - np.sum(np.log(p[np.arange(num_train), y]))
+    dx = p
+    p2 = np.zeros_like(p)
+    p2[np.arange(num_train), y] = 1.0
+    dx -= p2
+
+    loss /= num_train
+    dx /= num_train
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
