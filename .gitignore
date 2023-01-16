@@ -2,3 +2,4 @@ deeplearningfromscratch/
 .idea/
 assignments/*.zip
 demo.*
+**/.ipynb_checkpoints/
