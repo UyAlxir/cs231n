@@ -3,3 +3,6 @@ deeplearningfromscratch/
 assignments/*.zip
 demo.*
 assignments/*/.ipynb_checkpoints/
+*.zip
+assignments/*/*.html
+assignments/*/*.pdf

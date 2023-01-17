@@ -3,7 +3,7 @@ import os
 import subprocess
 
 try:
-    from PyPDF2 import PdfFileMerger
+    from PyPDF2 import PdfMerger
 
     MERGE = True
 except ImportError:
@@ -26,7 +26,7 @@ def main(files, pdf_name):
         print("Created PDF {}.".format(f))
     if MERGE:
         pdfs = [f.split(".")[0] + ".pdf" for f in files]
-        merger = PdfFileMerger()
+        merger = PdfMerger()
         for pdf in pdfs:
             merger.append(pdf)
         merger.write(pdf_name)
