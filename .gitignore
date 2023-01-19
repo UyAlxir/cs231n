@@ -6,3 +6,4 @@ assignments/*/.ipynb_checkpoints/
 *.zip
 assignments/*/*.html
 assignments/*/*.pdf
+assignments/**/datasets/

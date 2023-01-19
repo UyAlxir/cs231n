@@ -74,7 +74,14 @@ class FullyConnectedNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        hidden_dims = np.append( np.append( input_dim, hidden_dims ) , num_classes )
+        for id in range(1,self.num_layers+1):
+            Wid = "W" + str(id)
+            bid = 'b' + str(id)
+            row = hidden_dims[id-1]
+            col = hidden_dims[id]
+            self.params[Wid] = np.random.normal(loc=0.0, scale=weight_scale, size=(row,col))
+            self.params[bid] = np.zeros(col)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -148,8 +155,18 @@ class FullyConnectedNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
-
+        forward = {"h1_in":X}
+        for id in range(1,self.num_layers+1):
+            Wid = "W" + str(id)
+            bid = 'b' + str(id)
+            hid_in = 'h' + str(id) + "_in"
+            hidp_in = 'h' + str(id+1) + "_in"
+            hid_caceh = 'h' + str(id) + "_cache"
+            if id != self.num_layers:
+                forward[hidp_in],forward[hid_caceh] = affine_relu_forward(forward [hid_in] , self.params[Wid],self.params[bid])
+            else :
+                forward[hidp_in], forward[hid_caceh] = affine_forward(forward[ hid_in ],self.params[Wid],self.params[bid])
+        scores = forward['h' + str(self.num_layers+1) + "_in"]
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -175,7 +192,23 @@ class FullyConnectedNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        backward = {}
+        hn = "h" + str(self.num_layers) + "_in"
+
+        loss, backward[hn] = softmax_loss(scores, y)
+        for id in range(self.num_layers,0,-1):
+            Wid = "W" + str(id)
+            bid = 'b' + str(id)
+            loss += 0.5 * self.reg * np.sum(self.params[Wid]**2)
+
+            hid_in = 'h' + str(id) + "_in"
+            hidm_in = 'h' + str(id-1) + "_in"
+            hid_caceh = 'h' + str(id) + "_cache"
+            if id != self.num_layers:
+                backward[hidm_in] , grads[Wid] , grads[bid] = affine_relu_backward(backward[hid_in],forward[hid_caceh])
+            else :
+                backward[hidm_in], grads[Wid], grads[bid] = affine_backward(backward[hid_in], forward[hid_caceh])
+            grads[Wid] += self.reg * self.params[Wid]
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
