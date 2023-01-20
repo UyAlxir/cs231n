@@ -183,6 +183,9 @@ class FullyConnectedNet(object):
                                                       self.params[betaid], self.bn_params[id - 1])
                 else :
                     forward[hidp_in],forward[hid_caceh] = affine_relu_forward(forward [hid_in] , self.params[Wid],self.params[bid])
+                if self.use_dropout :
+                    dp_cache = 'dpcache%d' % (id)
+                    forward[hidp_in],forward[dp_cache] = dropout_forward(forward[hidp_in],self.dropout_param)
             else :
                 forward[hidp_in], forward[hid_caceh] = affine_forward(forward[ hid_in ],self.params[Wid],self.params[bid])
         scores = forward['h' + str(self.num_layers+1) + "_in"]
@@ -223,6 +226,9 @@ class FullyConnectedNet(object):
             hidm_in = 'h' + str(id-1) + "_in"
             hid_caceh = 'h' + str(id) + "_cache"
             if id != self.num_layers:
+                if self.use_dropout:
+                    dp_cache = 'dpcache%d' % (id)
+                    backward[hid_in] = dropout_backward(backward[hid_in],forward[dp_cache])
                 gammaid = 'gamma%d' % (id)
                 betaid = 'beta%d' % (id)
                 if self.normalization == 'batchnorm':
