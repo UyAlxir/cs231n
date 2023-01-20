@@ -82,6 +82,13 @@ class FullyConnectedNet(object):
             col = hidden_dims[id]
             self.params[Wid] = np.random.normal(loc=0.0, scale=weight_scale, size=(row,col))
             self.params[bid] = np.zeros(col)
+            if self.normalization != None:
+                gammaid = 'gamma%d'%(id)
+                betaid = 'beta%d'%(id)
+                if id == self.num_layers:
+                    continue
+                self.params[gammaid] = np.ones(col) # gamma初始化为1
+                self.params[betaid] = np.zeros(col) # beta初始化为0
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -163,7 +170,19 @@ class FullyConnectedNet(object):
             hidp_in = 'h' + str(id+1) + "_in"
             hid_caceh = 'h' + str(id) + "_cache"
             if id != self.num_layers:
-                forward[hidp_in],forward[hid_caceh] = affine_relu_forward(forward [hid_in] , self.params[Wid],self.params[bid])
+                gammaid = 'gamma%d' % (id)
+                betaid = 'beta%d' % (id)
+                if self.normalization == 'batchnorm':
+                    forward[hidp_in], forward[hid_caceh] = \
+                        affine_batchnorm_relu_forward(forward[hid_in],self.params[Wid],self.params[bid],self.params[gammaid],
+                                                    self.params[betaid],self.bn_params[id-1])
+                elif self.normalization == 'layernorm':
+                    forward[hidp_in], forward[hid_caceh] = \
+                        affine_layernorm_relu_forward(forward[hid_in], self.params[Wid], self.params[bid],
+                                                      self.params[gammaid],
+                                                      self.params[betaid], self.bn_params[id - 1])
+                else :
+                    forward[hidp_in],forward[hid_caceh] = affine_relu_forward(forward [hid_in] , self.params[Wid],self.params[bid])
             else :
                 forward[hidp_in], forward[hid_caceh] = affine_forward(forward[ hid_in ],self.params[Wid],self.params[bid])
         scores = forward['h' + str(self.num_layers+1) + "_in"]
@@ -200,12 +219,20 @@ class FullyConnectedNet(object):
             Wid = "W" + str(id)
             bid = 'b' + str(id)
             loss += 0.5 * self.reg * np.sum(self.params[Wid]**2)
-
             hid_in = 'h' + str(id) + "_in"
             hidm_in = 'h' + str(id-1) + "_in"
             hid_caceh = 'h' + str(id) + "_cache"
             if id != self.num_layers:
-                backward[hidm_in] , grads[Wid] , grads[bid] = affine_relu_backward(backward[hid_in],forward[hid_caceh])
+                gammaid = 'gamma%d' % (id)
+                betaid = 'beta%d' % (id)
+                if self.normalization == 'batchnorm':
+                    backward[hidm_in], grads[Wid], grads[bid],grads[gammaid],grads[betaid] = \
+                        affine_batchnorm_relu_backward(backward[hid_in],forward[hid_caceh])
+                elif self.normalization == 'layernorm':
+                    backward[hidm_in], grads[Wid], grads[bid], grads[gammaid], grads[betaid] = \
+                        affine_layernorm_relu_backward(backward[hid_in], forward[hid_caceh])
+                else:
+                    backward[hidm_in] , grads[Wid] , grads[bid] = affine_relu_backward(backward[hid_in],forward[hid_caceh])
             else :
                 backward[hidm_in], grads[Wid], grads[bid] = affine_backward(backward[hid_in], forward[hid_caceh])
             grads[Wid] += self.reg * self.params[Wid]
